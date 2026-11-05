@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /visitas/{visitId} {
+      // Solo se permite crear documentos con los campos esperados.
+      // No se permite leer, editar ni borrar desde el navegador público.
+      allow create: if
+        request.resource.data.keys().hasAll([
+          'visitorId', 'sessionId', 'consentVersion', 'visitedAt',
+          'pagePath', 'referrerHost', 'language', 'timeZone',
+          'screen', 'device', 'browser', 'operatingSystem'
+        ]) &&
+        request.resource.data.keys().hasOnly([
+          'visitorId', 'sessionId', 'consentVersion', 'visitedAt',
+          'pagePath', 'referrerHost', 'language', 'timeZone',
+          'screen', 'device', 'browser', 'operatingSystem'
+        ]) &&
+        request.resource.data.visitorId is string &&
+        request.resource.data.visitorId.size() == 36 &&
+        request.resource.data.sessionId is string &&
+        request.resource.data.sessionId.size() == 36 &&
+        request.resource.data.consentVersion is string &&
+        request.resource.data.consentVersion.size() <= 10 &&
+        request.resource.data.visitedAt is timestamp &&
+        request.resource.data.pagePath is string &&
+        request.resource.data.pagePath.size() <= 300 &&
+        request.resource.data.referrerHost is string &&
+        request.resource.data.referrerHost.size() <= 150 &&
+        request.resource.data.language is string &&
+        request.resource.data.language.size() <= 35 &&
+        request.resource.data.timeZone is string &&
+        request.resource.data.timeZone.size() <= 80 &&
+        request.resource.data.screen is string &&
+        request.resource.data.screen.size() <= 20 &&
+        request.resource.data.device in ['móvil', 'tablet', 'computadora'] &&
+        request.resource.data.browser is string &&
+        request.resource.data.browser.size() <= 40 &&
+        request.resource.data.operatingSystem is string &&
+        request.resource.data.operatingSystem.size() <= 40;
+
+      allow read, update, delete: if false;
+    }
+  }
+}

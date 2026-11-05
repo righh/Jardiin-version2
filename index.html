@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Jardín 3D</title>
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+<button id="privacy-settings" type="button" aria-label="Configurar privacidad">Privacidad</button>
+
+<section id="privacy-consent" role="dialog" aria-modal="true"
+         aria-labelledby="privacy-title" aria-describedby="privacy-description" hidden>
+  <h2 id="privacy-title">Privacidad y estadísticas</h2>
+  <p id="privacy-description">
+    Este jardín puede guardar estadísticas básicas de la visita en Firebase:
+    un identificador aleatorio del navegador, fecha y hora, página consultada,
+    idioma, zona horaria, tamaño de pantalla y datos generales del navegador,
+    sistema operativo y tipo de dispositivo.
+  </p>
+  <p>
+    Estos datos se utilizan únicamente para conocer el uso del sitio y mejorar
+    su funcionamiento. No solicitamos tu nombre, correo, contactos, ubicación
+    precisa ni contraseñas. Si rechazas, no se enviarán estadísticas a Firestore.
+  </p>
+  <p>
+    Puedes cambiar tu decisión desde el botón «Privacidad». Consulta el aviso
+    de privacidad completo del responsable del sitio para conocer identidad,
+    contacto, conservación de datos y cómo ejercer tus derechos.
+  </p>
+  <div class="privacy-actions">
+    <button id="privacy-accept" type="button">Aceptar estadísticas</button>
+    <button id="privacy-reject" type="button">Rechazar</button>
+    <button id="privacy-close" type="button">Cerrar</button>
+  </div>
+</section>
+
+<div id="hud"></div>
+<div id="pad"><button id="bn" aria-label="Día o noche">☀</button><div id="dp"><button id="bf" aria-label="Avanzar">▲</button><button id="bl" aria-label="Girar a la izquierda">◀</button><button id="bb" aria-label="Retroceder">▼</button><button id="br" aria-label="Girar a la derecha">▶</button></div></div>
+<div id="fade"></div>
+<div id="joy"><i></i></div>
+
+
+<div id="veil"></div>
+<div id="bar1"></div><div id="bar2"></div>
+
+<div id="mus"><button id="mb" aria-label="Música">♪</button><div id="mp"><div>$ elegir_musica --jardin</div><select id="trk"><option value="sereno">Jardín sereno (pad)</option><option value="lluvia">Lluvia suave</option><option value="cristal">Piano de cristal</option><option value="pajaros">Amanecer con pájaros</option></select><button id="amb">▶ Reproducir selección</button><label>Cargar mi música<input type="file" id="mf" accept="audio/*" hidden></label><button id="pp">Pausar</button><input type="range" id="vol" min="0" max="1" step=".01" value=".6" aria-label="Volumen"></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="./js/jardin.js"></script>
+<script type="module" src="./js/firebase.js"></script>
+</body>
+</html>
