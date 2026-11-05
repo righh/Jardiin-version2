@@ -8,34 +8,6 @@
 </head>
 <body>
 
-<button id="privacy-settings" type="button" aria-label="Configurar privacidad">Privacidad</button>
-
-<section id="privacy-consent" role="dialog" aria-modal="true"
-         aria-labelledby="privacy-title" aria-describedby="privacy-description" hidden>
-  <h2 id="privacy-title">Privacidad y estadísticas</h2>
-  <p id="privacy-description">
-    Este jardín puede guardar estadísticas básicas de la visita en Firebase:
-    un identificador aleatorio del navegador, fecha y hora, página consultada,
-    idioma, zona horaria, tamaño de pantalla y datos generales del navegador,
-    sistema operativo y tipo de dispositivo.
-  </p>
-  <p>
-    Estos datos se utilizan únicamente para conocer el uso del sitio y mejorar
-    su funcionamiento. No solicitamos tu nombre, correo, contactos, ubicación
-    precisa ni contraseñas. Si rechazas, no se enviarán estadísticas a Firestore.
-  </p>
-  <p>
-    Puedes cambiar tu decisión desde el botón «Privacidad». Consulta el aviso
-    de privacidad completo del responsable del sitio para conocer identidad,
-    contacto, conservación de datos y cómo ejercer tus derechos.
-  </p>
-  <div class="privacy-actions">
-    <button id="privacy-accept" type="button">Aceptar estadísticas</button>
-    <button id="privacy-reject" type="button">Rechazar</button>
-    <button id="privacy-close" type="button">Cerrar</button>
-  </div>
-</section>
-
 <div id="hud"></div>
 <div id="pad"><button id="bn" aria-label="Día o noche">☀</button><div id="dp"><button id="bf" aria-label="Avanzar">▲</button><button id="bl" aria-label="Girar a la izquierda">◀</button><button id="bb" aria-label="Retroceder">▼</button><button id="br" aria-label="Girar a la derecha">▶</button></div></div>
 <div id="fade"></div>
