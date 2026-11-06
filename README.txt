@@ -57,3 +57,10 @@ modificar ni borrar visitas desde el navegador público. La API key de Firebase 
 identifica el proyecto; no es una contraseña. Configura restricciones de dominio para la API key,
 activa Firebase App Check y revisa límites/costos. Estas reglas no impiden por sí solas spam de
 escrituras: App Check y controles adicionales son recomendables.
+
+
+MEJORA DE LETREROS (VERSION MOVIL)
+- Orientacion fija para evitar que los letreros persigan la camara y parpadeen al caminar o girar.
+- Texturas de letreros dibujadas en resolucion interna 2x para mejorar la nitidez.
+- Mipmaps, filtrado lineal y anisotropia para mantener la lectura en angulos oblicuos.
+- Pixel ratio maximo moderado: 1.5 en movil y 2 en escritorio.

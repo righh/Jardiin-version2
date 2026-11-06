@@ -8,7 +8,7 @@ const MOB=matchMedia('(pointer:coarse)').matches||innerWidth<700;
 const hud=document.getElementById('hud');hud.textContent='';
 
 const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,MOB?1.25:1.75));
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,MOB?1.5:2));
 renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const cv=renderer.domElement;document.body.prepend(cv);
@@ -346,7 +346,7 @@ function woodFace(g,W,H){
 function cut(g,s,x,y){const f=g.fillStyle;g.fillStyle='rgba(255,235,200,.4)';g.fillText(s,x+1.5,y+2);g.fillStyle=f;g.fillText(s,x,y)}
 const metalM=new THREE.MeshStandardMaterial({map:woodTex(),roughness:.85,metalness:0});const signHits=[];
 function makeSign(T,c){
- const inf=INFO[T.name]||['','',''],W=1024,H=960,k2=document.createElement('canvas');k2.width=W;k2.height=H;const g=k2.getContext('2d');
+ const inf=INFO[T.name]||['','',''],W=1024,H=960,RES=2,k2=document.createElement('canvas');k2.width=W*RES;k2.height=H*RES;const g=k2.getContext('2d');g.setTransform(RES,0,0,RES,0,0);
  woodPaint(g,0,0,W,H,['#8a5e34','#a8774a']);g.strokeStyle='rgba(30,15,4,.7)';g.lineWidth=8;g.strokeRect(4,4,W-8,H-8);
  const qx=64,qy=64,qw=W-128,qh=H-128;
  g.save();g.shadowColor='rgba(0,0,0,.5)';g.shadowBlur=20;g.shadowOffsetY=6;g.fillStyle='#f3e8cc';g.fillRect(qx,qy,qw,qh);g.restore();
@@ -365,10 +365,12 @@ function makeSign(T,c){
  T.pal.slice(0,6).forEach((p,i)=>{g.fillStyle=p.c[1];g.beginPath();g.arc(W-L-17-i*48,y+34,17,0,TAU);g.fill();g.strokeStyle='rgba(60,30,10,.6)';g.lineWidth=2;g.stroke()});
  y+=118;g.fillStyle='#8a4f12';g.font='bold 28px Georgia,serif';ls(1);g.fillText('DATO CURIOSO',L,y);ls(0);
  g.fillStyle='#3a2210';g.font='italic 38px Georgia,serif';wrapT(g,inf[2],L,y+52,mw,44,4);
- const t=new THREE.CanvasTexture(k2);t.encoding=THREE.sRGBEncoding;t.anisotropy=renderer.capabilities.getMaxAnisotropy();
- const m=new THREE.MeshBasicMaterial({map:t});signMats.push(m);
+ const t=new THREE.CanvasTexture(k2);
+ t.encoding=THREE.sRGBEncoding;t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;
+ t.anisotropy=renderer.capabilities.getMaxAnisotropy();t.needsUpdate=true;
+ const m=new THREE.MeshBasicMaterial({map:t,toneMapped:false,side:THREE.FrontSide});signMats.push(m);
  const sg=new Group(),post=new Mesh(new THREE.BoxGeometry(.09,2.6,.1),metalM);post.position.set(-.93,1.3,0);post.castShadow=true;sg.add(post);const post2=post.clone();post2.position.x=.93;sg.add(post2);
- const fr=new Mesh(new THREE.BoxGeometry(1.72,1.62,.07),metalM);fr.position.y=1.85;fr.castShadow=true;fr.userData.bed=c;signHits.push(fr);sg.add(fr);
+ const fr=new Mesh(new THREE.BoxGeometry(1.72,1.62,.07),metalM);fr.position.y=1.85;fr.castShadow=false;fr.receiveShadow=false;fr.userData.bed=c;signHits.push(fr);sg.add(fr);
  const rf=new Mesh(new THREE.BoxGeometry(1.9,.08,.18),metalM);rf.position.y=2.72;rf.castShadow=true;sg.add(rf);
  const f=new Mesh(new THREE.PlaneGeometry(1.6,1.5),m);f.position.set(0,1.85,.04);sg.add(f);
  const b=new Mesh(new THREE.PlaneGeometry(1.6,1.5),m);b.position.set(0,1.85,-.04);b.rotation.y=Math.PI;sg.add(b);
@@ -726,7 +728,7 @@ addEventListener('resize',resize);resize();
 let last=performance.now();
 function loop(now){
  requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;const t=now/1000;
- nav(dt);if(!inRoom){for(const sg of signGroups){const target=Math.atan2(cam.position.x-sg.position.x,cam.position.z-sg.position.z),delta=((target-sg.rotation.y+Math.PI)%(TAU)+TAU)%TAU-Math.PI;sg.rotation.y+=delta*(1-Math.exp(-dt*6))}}grassMat.uniforms.uT.value=t;portalMat.uniforms.uT.value=t;for(const x of wallT)x.offset.x+=dt*.04;for(const x of flatT)x.offset.y+=dt*.04;doorCheck();fx(dt,t);if(!intro.go&&++warmF>8)beginIntro();
+ nav(dt);grassMat.uniforms.uT.value=t;portalMat.uniforms.uT.value=t;for(const x of wallT)x.offset.x+=dt*.04;for(const x of flatT)x.offset.y+=dt*.04;doorCheck();fx(dt,t);if(!intro.go&&++warmF>8)beginIntro();
  for(const p of plants){p.hov+=((p===hovered?1:0)-p.hov)*(1-Math.exp(-dt*6));updPlant(p,dt,t)}
  const a=pg.attributes.position;for(let i=0;i<PN;i++){a.array[i*3]+=Math.sin(t*.3+i)*.002;a.array[i*3+1]+=Math.cos(t*.5+i*1.3)*.0015;a.array[i*3+2]+=Math.cos(t*.25+i*.7)*.002}a.needsUpdate=true;
  renderer.render(scene,cam);
