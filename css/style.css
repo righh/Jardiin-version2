@@ -44,6 +44,7 @@ body.cine #bar1,body.cine #bar2{transform:none}
   font: 12px/1.2 Arial, sans-serif;
   cursor: pointer;
   backdrop-filter: blur(8px);
+  visibility: hidden;
 }
 #privacy-notice {
   position: fixed;
