@@ -30,7 +30,7 @@ body.cine #bar1,body.cine #bar2{transform:none}
 @media (pointer:coarse){#joy{display:block}}
 
 
-/* Aviso y controles de privacidad */
+/* Aviso de privacidad discreto: no bloquea ni interrumpe el jardín. */
 #privacy-settings {
   position: fixed;
   z-index: 20;
@@ -38,46 +38,54 @@ body.cine #bar1,body.cine #bar2{transform:none}
   left: 12px;
   border: 1px solid rgba(255,255,255,.28);
   border-radius: 999px;
-  padding: 9px 13px;
+  padding: 8px 12px;
   color: #fff;
-  background: rgba(8,25,13,.82);
-  font: 13px/1.2 Arial, sans-serif;
+  background: rgba(8,25,13,.58);
+  font: 12px/1.2 Arial, sans-serif;
   cursor: pointer;
   backdrop-filter: blur(8px);
 }
-#privacy-consent {
+#privacy-notice {
   position: fixed;
-  z-index: 30;
-  left: 16px;
-  right: 16px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 18px;
-  border: 1px solid rgba(144,210,160,.45);
-  border-radius: 16px;
+  z-index: 21;
+  top: calc(env(safe-area-inset-top, 0px) + 52px);
+  left: 12px;
+  width: min(430px, calc(100vw - 48px));
+  max-height: min(65vh, 430px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 16px 18px;
+  border: 1px solid rgba(144,210,160,.4);
+  border-radius: 14px;
   color: #f4f7ef;
-  background: rgba(5,18,10,.96);
-  box-shadow: 0 12px 40px rgba(0,0,0,.45);
-  font: 14px/1.5 system-ui, sans-serif;
+  background: rgba(5,18,10,.94);
+  box-shadow: 0 8px 30px rgba(0,0,0,.35);
+  font: 13px/1.5 system-ui, sans-serif;
   backdrop-filter: blur(12px);
 }
-#privacy-consent[hidden] { display: none !important; }
-#privacy-consent h2 { margin: 0 0 8px; font-size: 18px; }
-#privacy-consent p { margin: 8px 0; }
-#privacy-consent .privacy-actions {
-  display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px;
+#privacy-notice[hidden] { display: none !important; }
+#privacy-notice h2 { margin: 0 28px 8px 0; font-size: 16px; }
+#privacy-notice p { margin: 8px 0; }
+#privacy-close {
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  border: 0;
+  color: #fff;
+  background: transparent;
+  font: 24px/1 Arial, sans-serif;
+  cursor: pointer;
 }
-#privacy-consent button {
-  border: 1px solid #75c98c; border-radius: 999px;
-  padding: 10px 15px; cursor: pointer; font-weight: 600;
+
+#privacy-optout {
+  display: inline-block;
+  margin: 8px 0;
+  padding: 8px 11px;
+  border: 1px solid rgba(180,230,190,.5);
+  border-radius: 8px;
+  color: #f4f7ef;
+  background: rgba(35,90,48,.75);
+  font: inherit;
+  cursor: pointer;
 }
-#privacy-accept { color: #06210f; background: #9ce8ad; }
-#privacy-reject, #privacy-close {
-  color: #f4f7ef; background: #173321;
-}
-#privacy-consent a { color: #a8e7b5; }
-@media (max-width: 480px) {
-  #privacy-consent { left: 10px; right: 10px; bottom: 10px; padding: 15px; }
-  #privacy-consent .privacy-actions button { flex: 1 1 130px; }
-}
+#privacy-optout:disabled { opacity: .75; cursor: default; }

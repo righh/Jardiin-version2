@@ -1,46 +1,59 @@
-# Jardín 3D + Firebase Firestore
+JARDIN 3D + FIREBASE FIRESTORE — VERSION MEJORADA
 
-## Estructura
+ESTRUCTURA
+- index.html
+- css/style.css
+- js/jardin.js
+- js/firebase.js
+- firestore.rules
 
-- `index.html`: estructura del sitio y Three.js.
-- `css/style.css`: estilos originales extraídos del HTML y estilos del aviso de privacidad.
-- `js/jardin.js`: JavaScript original del jardín, sin modificar su lógica.
-- `js/firebase.js`: conexión a Firebase y registro de visitas con consentimiento.
-- `firestore.rules`: reglas sugeridas para la colección `visitas`.
+MEJORAS VISUALES DE LETREROS
+- Los letreros giran suavemente en el eje vertical para orientar su cara hacia la cámara.
+- El texto de descripción y dato curioso se ajusta a un número máximo de líneas y reduce su tamaño antes de recortarse.
+- Esto evita que las líneas largas se salgan de la placa o se encimen. La perspectiva 3D puede seguir variando ligeramente según el ángulo, pero el texto no se deforma por desbordamiento.
 
-## 1. Configurar Firestore
+DATOS TÉCNICOS REGISTRADOS
+- Identificador aleatorio de sesión, guardado solo en sessionStorage.
+- Fecha/hora del servidor, ruta, dominio de referencia, idioma y zona horaria.
+- Tipo de dispositivo, modelo cuando el navegador lo expone, factor de forma.
+- Navegador y versión; sistema operativo y versión.
+- Resolución de pantalla y tamaño de ventana.
 
-1. Abre https://console.firebase.google.com/
-2. Selecciona el proyecto `jardin-385dd`.
-3. Entra en **Firestore Database** y crea la base de datos.
-4. Abre la pestaña **Reglas**.
-5. Copia el contenido de `firestore.rules` y publícalo.
-6. La colección `visitas` se creará automáticamente al llegar el primer registro.
+MODELO DEL CELULAR
+El código intenta leer navigator.userAgentData.getHighEntropyValues() y la propiedad model.
+Chrome/Chromium en ciertos dispositivos puede proporcionar un modelo como “Pixel ...”. Safari,
+Firefox, iOS y otros navegadores pueden no facilitarlo. En ese caso se guarda “No disponible”.
+No se deduce ni inventa el modelo y no se usa fingerprinting.
 
-## 2. Publicar en GitHub Pages
+DATOS QUE NO SE RECOPILAN DIRECTAMENTE
+No se solicita nombre, correo, teléfono, contactos, contraseña, ubicación GPS, cámara,
+micrófono ni datos de sensores. El código no lee ni guarda directamente la IP. El usuario
+puede desactivar las estadísticas para futuras visitas en ese navegador desde el aviso de
+privacidad. La desactivación no borra registros anteriores; las solicitudes de cancelación se
+atienden por el contacto del responsable. El alojamiento
+y Firebase pueden procesar IP y registros técnicos en sus propios sistemas.
 
-Sube la carpeta y sus subcarpetas conservando exactamente los nombres:
-`index.html`, `css/style.css`, `js/jardin.js` y `js/firebase.js`.
+ANTES DE PUBLICAR
+1. Completa los campos entre corchetes del aviso en index.html: identidad y domicilio del
+   responsable, contacto, plazo de conservación y enlace al aviso integral.
+2. En Firebase Console > Firestore > Rules, reemplaza las reglas por firestore.rules y pulsa
+   Publish. Las reglas nuevas corresponden a la estructura de campos de esta versión.
+3. Sube la carpeta completa a GitHub manteniendo su estructura.
+4. Prueba en Chrome Android y, si es posible, Safari/iPhone y Firefox. El modelo exacto solo
+   aparecerá cuando el navegador lo proporcione.
 
-En GitHub: Settings → Pages → selecciona la rama `main` y la carpeta `/ (root)`.
+IMPORTANTE SOBRE PRIVACIDAD (MÉXICO)
+El carácter técnico de un dato no significa automáticamente que quede fuera de la legislación.
+El identificador de sesión y la combinación de datos del dispositivo pueden ser datos personales
+si permiten relacionar o identificar a una persona. Mantén disponible el aviso simplificado y
+publica un aviso integral con los datos obligatorios del responsable, finalidades, opciones para
+limitar uso/divulgación y mecanismo para ejercer derechos ARCO. Define un plazo de conservación
+real y elimina los registros al terminarlo. La implementación técnica no garantiza por sí sola
+cumplimiento legal; solicita revisión jurídica si el sitio tendrá uso comercial o gran escala.
 
-La ruta relativa de los archivos permite que funcione también en una URL de proyecto de GitHub Pages.
-
-## 3. Prueba
-
-Abre la página publicada, acepta las estadísticas y revisa Firestore → Data → `visitas`.
-Si rechazas, no se ejecuta la escritura. El botón «Privacidad» permite volver a abrir el aviso y cambiar la decisión.
-
-## 4. Seguridad adicional recomendada
-
-- Configura Firebase App Check para tu aplicación web y activa la aplicación gradual de protección para Cloud Firestore después de probarla.
-- Restringe la API key de Firebase por HTTP referrers (los dominios de tu GitHub Pages) y por las APIs que usa tu aplicación.
-- Revisa periódicamente el uso y las cuotas de Firestore.
-- No habilites lectura pública de la colección `visitas`.
-- La configuración web de Firebase y su API key son visibles en el navegador; la seguridad real depende de las reglas, App Check y la configuración del proyecto.
-
-## 5. Privacidad y cumplimiento
-
-El aviso incluido es una base técnica, no sustituye un aviso de privacidad legal completo. Antes de publicar, completa la identidad y datos de contacto del responsable, finalidades, plazo de conservación, transferencias/proveedores, procedimiento para ejercer derechos aplicables y cualquier otro contenido exigido por la legislación aplicable. Valida el texto con asesoría de privacidad.
-
-El sistema guarda un identificador aleatorio persistente en el navegador (seudónimo) para distinguir visitantes recurrentes. Aunque no guarda nombre ni correo, ese identificador y la información técnica pueden seguir considerándose datos personales según el contexto. Si no necesitas reconocer visitas recurrentes, elimina `visitorId` y su almacenamiento persistente.
+SEGURIDAD
+Las reglas permiten crear documentos con los campos y tipos esperados, pero no permiten leer,
+modificar ni borrar visitas desde el navegador público. La API key de Firebase visible en frontend
+identifica el proyecto; no es una contraseña. Configura restricciones de dominio para la API key,
+activa Firebase App Check y revisa límites/costos. Estas reglas no impiden por sí solas spam de
+escrituras: App Check y controles adicionales son recomendables.

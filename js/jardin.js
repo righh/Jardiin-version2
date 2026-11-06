@@ -319,8 +319,15 @@ const DESC={
 'Ranúnculo':'Planta de raíces en garra con hojas divididas y flores de pétalos finos como papel, en muchas capas.',
 'Campanilla':'Hierba de hojas estrechas y flores en forma de campana sobre tallos delgados.',
 'Rosal (arbusto)':'Arbusto denso y ramificado de follaje verde oscuro que sostiene muchas rosas al mismo tiempo.'};
-const signMats=[],ringG=new THREE.TorusGeometry(1.95,.05,6,36),ringM=new THREE.MeshStandardMaterial({color:col('#8a8780'),roughness:.9}),woodM=new THREE.MeshStandardMaterial({color:col('#6b4a2e'),roughness:.8});
-function wrapT(g,s,x,y,w,lh){const ws=s.split(' ');let l='';for(const t of ws){const m=l?l+' '+t:t;if(g.measureText(m).width>w&&l){cut(g,l,x,y);y+=lh;l=t}else l=m}cut(g,l,x,y);return y}
+const signMats=[],signGroups=[],ringG=new THREE.TorusGeometry(1.95,.05,6,36),ringM=new THREE.MeshStandardMaterial({color:col('#8a8780'),roughness:.9}),woodM=new THREE.MeshStandardMaterial({color:col('#6b4a2e'),roughness:.8});
+function wrapT(g,s,x,y,w,lh,maxLines=5){
+ const original=g.font,match=original.match(/^(.*?)(\d+(?:\.\d+)?)px\s*(.*)$/),base=match?Number(match[2]):38,family=match?match[3]:'Georgia,serif',prefix=match?match[1]:'';
+ const words=String(s||'').trim().split(/\s+/).filter(Boolean);let lines=[],size=base;
+ const makeLines=()=>{const out=[];let line='';for(const word of words){const test=line?line+' '+word:word;if(g.measureText(test).width>w&&line){out.push(line);line=word}else line=test}if(line)out.push(line);return out};
+ do{g.font=prefix+size+'px '+family;lines=makeLines();if(lines.length<=maxLines)break;size-=2}while(size>=22);
+ if(lines.length>maxLines){lines=lines.slice(0,maxLines);let last=lines[maxLines-1];while(last.length&&g.measureText(last+'…').width>w)last=last.slice(0,-1);lines[maxLines-1]=last+'…'}
+ lines.forEach((line,i)=>cut(g,line,x,y+i*lh));g.font=original;return y+Math.max(0,lines.length-1)*lh;
+}
 function woodPaint(g,x,y,w,h,base){
  const gr=g.createLinearGradient(0,y,0,y+h);gr.addColorStop(0,base[0]);gr.addColorStop(.5,base[1]);gr.addColorStop(1,base[0]);g.fillStyle=gr;g.fillRect(x,y,w,h);
  for(let i=0;i<260;i++){const yy=y+Math.random()*h;g.strokeStyle='rgba(60,32,10,'+Math.random()*.14+')';g.lineWidth=.6+Math.random()*2.2;g.beginPath();g.moveTo(x,yy);g.bezierCurveTo(x+w*.3,yy+(Math.random()-.5)*14,x+w*.6,yy+(Math.random()-.5)*14,x+w,yy+(Math.random()-.5)*8);g.stroke()}
@@ -352,12 +359,12 @@ function makeSign(T,c){
  g.fillStyle='#2a1506';g.fillText(T.name,L,222);
  g.font='italic 44px Georgia,serif';g.fillStyle='#6a4018';g.fillText(inf[0],L,288);
  g.fillStyle='rgba(90,52,20,.6)';g.fillRect(L,314,mw,3);
- g.fillStyle='#2a1506';g.font='40px Georgia,serif';let y=wrapT(g,DESC[T.name]||'',L,382,mw,54);
+ g.fillStyle='#2a1506';g.font='40px Georgia,serif';let y=wrapT(g,DESC[T.name]||'',L,382,mw,50,5);
  y+=78;g.fillStyle='#8a4f12';g.font='bold 28px Georgia,serif';ls(1);g.fillText('FLORACIÓN',L,y);ls(0);
  g.fillStyle='#2a1506';g.font='42px Georgia,serif';g.fillText(inf[1],L,y+54);
  T.pal.slice(0,6).forEach((p,i)=>{g.fillStyle=p.c[1];g.beginPath();g.arc(W-L-17-i*48,y+34,17,0,TAU);g.fill();g.strokeStyle='rgba(60,30,10,.6)';g.lineWidth=2;g.stroke()});
  y+=118;g.fillStyle='#8a4f12';g.font='bold 28px Georgia,serif';ls(1);g.fillText('DATO CURIOSO',L,y);ls(0);
- g.fillStyle='#3a2210';g.font='italic 38px Georgia,serif';wrapT(g,inf[2],L,y+52,mw,50);
+ g.fillStyle='#3a2210';g.font='italic 38px Georgia,serif';wrapT(g,inf[2],L,y+52,mw,44,4);
  const t=new THREE.CanvasTexture(k2);t.encoding=THREE.sRGBEncoding;t.anisotropy=renderer.capabilities.getMaxAnisotropy();
  const m=new THREE.MeshBasicMaterial({map:t});signMats.push(m);
  const sg=new Group(),post=new Mesh(new THREE.BoxGeometry(.09,2.6,.1),metalM);post.position.set(-.93,1.3,0);post.castShadow=true;sg.add(post);const post2=post.clone();post2.position.x=.93;sg.add(post2);
@@ -366,7 +373,7 @@ function makeSign(T,c){
  const f=new Mesh(new THREE.PlaneGeometry(1.6,1.5),m);f.position.set(0,1.85,.04);sg.add(f);
  const b=new Mesh(new THREE.PlaneGeometry(1.6,1.5),m);b.position.set(0,1.85,-.04);b.rotation.y=Math.PI;sg.add(b);
  let best=0,bs=-1;for(let k=0;k<16;k++){const a=k/16*TAU,px=c.x+Math.cos(a)*2.3,pz=c.z+Math.sin(a)*2.3;let mn=99;for(const o of centers)if(o!==c)mn=Math.min(mn,Math.hypot(o.x-px,o.z-pz));if(mn>bs){bs=mn;best=a}}
- sg.position.set(c.x+Math.cos(best)*2.3,0,c.z+Math.sin(best)*2.3);sg.rotation.y=Math.PI/2-best;scene.add(sg);
+ sg.position.set(c.x+Math.cos(best)*2.3,0,c.z+Math.sin(best)*2.3);sg.rotation.y=Math.PI/2-best;scene.add(sg);signGroups.push(sg);
 }
 // ---------- disposición del jardín ----------
 const centers=TYPES.map((T,ti)=>{const a=ti*2.39996+.3,d=4.2*Math.sqrt(ti+.6);return{x:Math.cos(a)*d,z:Math.sin(a)*d}});
@@ -719,7 +726,7 @@ addEventListener('resize',resize);resize();
 let last=performance.now();
 function loop(now){
  requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;const t=now/1000;
- nav(dt);grassMat.uniforms.uT.value=t;portalMat.uniforms.uT.value=t;for(const x of wallT)x.offset.x+=dt*.04;for(const x of flatT)x.offset.y+=dt*.04;doorCheck();fx(dt,t);if(!intro.go&&++warmF>8)beginIntro();
+ nav(dt);if(!inRoom){for(const sg of signGroups){const target=Math.atan2(cam.position.x-sg.position.x,cam.position.z-sg.position.z),delta=((target-sg.rotation.y+Math.PI)%(TAU)+TAU)%TAU-Math.PI;sg.rotation.y+=delta*(1-Math.exp(-dt*6))}}grassMat.uniforms.uT.value=t;portalMat.uniforms.uT.value=t;for(const x of wallT)x.offset.x+=dt*.04;for(const x of flatT)x.offset.y+=dt*.04;doorCheck();fx(dt,t);if(!intro.go&&++warmF>8)beginIntro();
  for(const p of plants){p.hov+=((p===hovered?1:0)-p.hov)*(1-Math.exp(-dt*6));updPlant(p,dt,t)}
  const a=pg.attributes.position;for(let i=0;i<PN;i++){a.array[i*3]+=Math.sin(t*.3+i)*.002;a.array[i*3+1]+=Math.cos(t*.5+i*1.3)*.0015;a.array[i*3+2]+=Math.cos(t*.25+i*.7)*.002}a.needsUpdate=true;
  renderer.render(scene,cam);

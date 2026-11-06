@@ -1,5 +1,6 @@
-// Firebase + Cloud Firestore para el Jardín 3D.
-// La recopilación queda desactivada hasta que el visitante acepte el aviso.
+// Estadísticas técnicas de visita con minimización de datos.
+// El navegador solo entrega el modelo del dispositivo si admite User-Agent Client Hints.
+// No se usan técnicas de fingerprinting ni se solicita ubicación precisa.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
 import {
@@ -21,33 +22,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const SESSION_KEY = "jardin_session_id_v2";
+const OPT_OUT_KEY = "jardin_disable_statistics_v1";
+const PRIVACY_NOTICE_VERSION = "2.0";
 
-const CONSENT_KEY = "jardin_privacy_consent_v1";
-const VISITOR_KEY = "jardin_visitor_id_v1";
-const SESSION_KEY = "jardin_session_id_v1";
-const CONSENT_VERSION = "1.0";
-
-const panel = document.getElementById("privacy-consent");
-const openButton = document.getElementById("privacy-settings");
-const acceptButton = document.getElementById("privacy-accept");
-const rejectButton = document.getElementById("privacy-reject");
-const closeButton = document.getElementById("privacy-close");
-
-function readConsent() {
-  try {
-    return localStorage.getItem(CONSENT_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function writeConsent(value) {
-  try {
-    localStorage.setItem(CONSENT_KEY, value);
-  } catch (error) {
-    console.warn("No se pudo guardar la preferencia de privacidad.", error);
-  }
-}
+const privacyButton = document.getElementById("privacy-settings");
+const privacyNotice = document.getElementById("privacy-notice");
+const closePrivacyButton = document.getElementById("privacy-close");
+const optOutButton = document.getElementById("privacy-optout");
 
 function randomId() {
   if (crypto.randomUUID) return crypto.randomUUID();
@@ -55,19 +37,6 @@ function randomId() {
     const r = Math.random() * 16 | 0;
     return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
   });
-}
-
-function getStoredId(key) {
-  try {
-    let id = localStorage.getItem(key);
-    if (!id) {
-      id = randomId();
-      localStorage.setItem(key, id);
-    }
-    return id;
-  } catch {
-    return randomId();
-  }
 }
 
 function getSessionId() {
@@ -83,28 +52,67 @@ function getSessionId() {
   }
 }
 
-function browserName(ua) {
+function browserFromUA(ua) {
   if (/Edg\//i.test(ua)) return "Edge";
   if (/OPR\//i.test(ua)) return "Opera";
   if (/Firefox\//i.test(ua)) return "Firefox";
+  if (/CriOS\//i.test(ua)) return "Chrome iOS";
   if (/Chrome\//i.test(ua)) return "Chrome";
-  if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) return "Safari";
-  return "Otro/no identificado";
+  if (/Safari\//i.test(ua)) return "Safari";
+  return "No identificado";
 }
 
-function operatingSystem(ua) {
-  if (/Windows NT 10/i.test(ua)) return "Windows";
+function osFromUA(ua) {
+  if (/Windows NT/i.test(ua)) return "Windows";
   if (/Android/i.test(ua)) return "Android";
-  if (/iPhone|iPad|iPod/i.test(ua)) return "iOS";
+  if (/iPhone|iPad|iPod/i.test(ua)) return "iOS/iPadOS";
   if (/Mac OS X/i.test(ua)) return "macOS";
   if (/Linux/i.test(ua)) return "Linux";
-  return "Otro/no identificado";
+  return "No identificado";
 }
 
-function deviceType(ua) {
+function deviceFromUA(ua) {
   if (/iPad|Tablet/i.test(ua)) return "tablet";
   if (/Mobi|Android|iPhone/i.test(ua)) return "móvil";
   return "computadora";
+}
+
+async function getDeviceDetails() {
+  const ua = navigator.userAgent || "";
+  const fallback = {
+    device: deviceFromUA(ua),
+    deviceModel: "No disponible en este navegador",
+    formFactor: "No disponible",
+    operatingSystem: osFromUA(ua),
+    platformVersion: "No disponible",
+    browser: browserFromUA(ua),
+    browserVersion: "No disponible"
+  };
+
+  // Chromium puede ofrecer el modelo mediante User-Agent Client Hints.
+  // Safari y Firefox normalmente no exponen el modelo exacto.
+  if (!navigator.userAgentData?.getHighEntropyValues) return fallback;
+
+  try {
+    const hints = await navigator.userAgentData.getHighEntropyValues([
+      "model", "platformVersion", "formFactors", "fullVersionList"
+    ]);
+    const brands = (hints.fullVersionList || navigator.userAgentData.brands || [])
+      .filter(item => !/Not.A.Brand/i.test(item.brand || ""));
+    const primaryBrand = brands.find(item => /Google Chrome|Microsoft Edge|Opera/i.test(item.brand)) || brands[0];
+
+    return {
+      device: hints.mobile ? "móvil" : (hints.formFactors?.includes("Tablet") ? "tablet" : fallback.device),
+      deviceModel: (hints.model || "").trim().slice(0, 100) || "No disponible en este navegador",
+      formFactor: (hints.formFactors || []).join(", ").slice(0, 60) || "No disponible",
+      operatingSystem: (hints.platform || fallback.operatingSystem).slice(0, 40),
+      platformVersion: (hints.platformVersion || "No disponible").slice(0, 40),
+      browser: (primaryBrand?.brand || fallback.browser).slice(0, 40),
+      browserVersion: (primaryBrand?.version || "No disponible").slice(0, 30)
+    };
+  } catch {
+    return fallback;
+  }
 }
 
 function safeReferrerHost() {
@@ -115,74 +123,55 @@ function safeReferrerHost() {
   }
 }
 
+function togglePrivacyNotice(forceOpen) {
+  const shouldOpen = typeof forceOpen === "boolean" ? forceOpen : privacyNotice.hidden;
+  privacyNotice.hidden = !shouldOpen;
+  privacyButton.setAttribute("aria-expanded", String(shouldOpen));
+}
+
+privacyButton.addEventListener("click", () => togglePrivacyNotice());
+closePrivacyButton.addEventListener("click", () => togglePrivacyNotice(false));
+try {
+  if (localStorage.getItem(OPT_OUT_KEY) === "1") {
+    optOutButton.textContent = "Estadísticas desactivadas para futuras visitas";
+    optOutButton.disabled = true;
+  }
+} catch {}
+
+optOutButton.addEventListener("click", () => {
+  try { localStorage.setItem(OPT_OUT_KEY, "1"); } catch {}
+  optOutButton.textContent = "Estadísticas desactivadas para futuras visitas";
+  optOutButton.disabled = true;
+});
+
 let visitRegisteredThisPage = false;
 
 async function registerVisit() {
-  // Una sola visita por carga de página y solo con aceptación explícita.
-  if (readConsent() !== "accepted" || visitRegisteredThisPage) return;
+  if (visitRegisteredThisPage) return;
   visitRegisteredThisPage = true;
-
-  const ua = navigator.userAgent || "";
-  const visitorId = getStoredId(VISITOR_KEY);
-  const sessionId = getSessionId();
-
-  const visit = {
-    visitorId,
-    sessionId,
-    consentVersion: CONSENT_VERSION,
-    visitedAt: serverTimestamp(),
-    pagePath: (location.pathname || "/").slice(0, 300),
-    referrerHost: safeReferrerHost(),
-    language: (navigator.language || "").slice(0, 35),
-    timeZone: (Intl.DateTimeFormat().resolvedOptions().timeZone || "").slice(0, 80),
-    screen: `${Number(screen.width) || 0}x${Number(screen.height) || 0}`,
-    device: deviceType(ua),
-    browser: browserName(ua),
-    operatingSystem: operatingSystem(ua)
-  };
+  try { if (localStorage.getItem(OPT_OUT_KEY) === "1") return; } catch {}
 
   try {
+    const details = await getDeviceDetails();
+    const visit = {
+      sessionId: getSessionId(),
+      privacyNoticeVersion: PRIVACY_NOTICE_VERSION,
+      visitedAt: serverTimestamp(),
+      pagePath: (location.pathname || "/").slice(0, 300),
+      referrerHost: safeReferrerHost(),
+      language: (navigator.language || "").slice(0, 35),
+      timeZone: (Intl.DateTimeFormat().resolvedOptions().timeZone || "").slice(0, 80),
+      screen: `${Number(screen.width) || 0}x${Number(screen.height) || 0}`,
+      viewport: `${Number(innerWidth) || 0}x${Number(innerHeight) || 0}`,
+      ...details
+    };
+
     await addDoc(collection(db, "visitas"), visit);
-    console.info("Visita registrada de forma anónima en Firestore.");
+    console.info("Visita registrada en Firestore.");
   } catch (error) {
-    // No mostramos detalles técnicos al visitante ni bloqueamos el jardín.
     console.warn("No se pudo registrar la visita en Firestore:", error.code || error.message);
   }
 }
 
-function showPrivacyPanel() {
-  panel.hidden = false;
-}
-
-function hidePrivacyPanel() {
-  panel.hidden = true;
-}
-
-acceptButton.addEventListener("click", () => {
-  writeConsent("accepted");
-  hidePrivacyPanel();
-  registerVisit();
-});
-
-rejectButton.addEventListener("click", () => {
-  writeConsent("rejected");
-  try {
-    localStorage.removeItem(VISITOR_KEY);
-    sessionStorage.removeItem(SESSION_KEY);
-  } catch {}
-  hidePrivacyPanel();
-});
-
-closeButton.addEventListener("click", hidePrivacyPanel);
-
-openButton.addEventListener("click", showPrivacyPanel);
-
-// Si nunca eligió, se muestra el aviso. Si ya eligió, respetamos esa decisión.
-if (!readConsent()) {
-  showPrivacyPanel();
-} else if (readConsent() === "accepted") {
-  registerVisit();
-}
-
-// Exponer solo una función mínima para permitir retirar el consentimiento
-// desde la consola no es necesario: el botón de privacidad vuelve a abrir el aviso.
+// Una escritura por carga de página; sessionId cambia al terminar la sesión.
+registerVisit();
