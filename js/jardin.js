@@ -369,11 +369,13 @@ function makeSign(T,c){
  t.encoding=THREE.sRGBEncoding;t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;
  t.anisotropy=renderer.capabilities.getMaxAnisotropy();t.needsUpdate=true;
  const m=new THREE.MeshBasicMaterial({map:t,toneMapped:false,side:THREE.FrontSide});signMats.push(m);
- const sg=new Group(),post=new Mesh(new THREE.BoxGeometry(.09,2.6,.1),metalM);post.position.set(-.93,1.3,0);post.castShadow=true;sg.add(post);const post2=post.clone();post2.position.x=.93;sg.add(post2);
+ const sg=new Group(),post=new Mesh(new THREE.BoxGeometry(.09,2.6,.1),metalM);post.position.set(-.93,1.3,0);post.castShadow=false;post.receiveShadow=false;sg.add(post);const post2=post.clone();post2.position.x=.93;sg.add(post2);
  const fr=new Mesh(new THREE.BoxGeometry(1.72,1.62,.07),metalM);fr.position.y=1.85;fr.castShadow=false;fr.receiveShadow=false;fr.userData.bed=c;signHits.push(fr);sg.add(fr);
- const rf=new Mesh(new THREE.BoxGeometry(1.9,.08,.18),metalM);rf.position.y=2.72;rf.castShadow=true;sg.add(rf);
- const f=new Mesh(new THREE.PlaneGeometry(1.6,1.5),m);f.position.set(0,1.85,.04);sg.add(f);
- const b=new Mesh(new THREE.PlaneGeometry(1.6,1.5),m);b.position.set(0,1.85,-.04);b.rotation.y=Math.PI;sg.add(b);
+ const rf=new Mesh(new THREE.BoxGeometry(1.9,.08,.18),metalM);rf.position.y=2.72;rf.castShadow=false;rf.receiveShadow=false;sg.add(rf);
+ const faceMat=new THREE.MeshBasicMaterial({map:t,toneMapped:false,side:THREE.FrontSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,depthWrite:false});
+ const f=new Mesh(new THREE.PlaneGeometry(1.6,1.5),faceMat);f.position.set(0,1.85,.065);f.renderOrder=2;sg.add(f);
+ const backMat=faceMat.clone();
+ const b=new Mesh(new THREE.PlaneGeometry(1.6,1.5),backMat);b.position.set(0,1.85,-.065);b.rotation.y=Math.PI;b.renderOrder=2;sg.add(b);
  let best=0,bs=-1;for(let k=0;k<16;k++){const a=k/16*TAU,px=c.x+Math.cos(a)*2.3,pz=c.z+Math.sin(a)*2.3;let mn=99;for(const o of centers)if(o!==c)mn=Math.min(mn,Math.hypot(o.x-px,o.z-pz));if(mn>bs){bs=mn;best=a}}
  sg.position.set(c.x+Math.cos(best)*2.3,0,c.z+Math.sin(best)*2.3);sg.rotation.y=Math.PI/2-best;scene.add(sg);signGroups.push(sg);
 }

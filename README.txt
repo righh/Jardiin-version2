@@ -64,3 +64,10 @@ MEJORA DE LETREROS (VERSION MOVIL)
 - Texturas de letreros dibujadas en resolucion interna 2x para mejorar la nitidez.
 - Mipmaps, filtrado lineal y anisotropia para mantener la lectura en angulos oblicuos.
 - Pixel ratio maximo moderado: 1.5 en movil y 2 en escritorio.
+
+
+CORRECCION ADICIONAL DEL PARPADEO DE LETREROS
+- Se separaron las caras impresas del panel de madera (0.065 unidades) para evitar conflicto de profundidad (z-fighting).
+- Se aplico polygonOffset y depthWrite=false a las caras impresas para impedir competencia de profundidad con el marco.
+- Se desactivo castShadow y receiveShadow en los postes y travesano de los letreros para eliminar vibracion de sombras al mover la camara.
+- Se conserva la orientacion fija de los letreros; no giran siguiendo la camara.
