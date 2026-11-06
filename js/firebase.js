@@ -129,7 +129,6 @@ function togglePrivacyNotice(forceOpen) {
   privacyButton.setAttribute("aria-expanded", String(shouldOpen));
 }
 
-/*
 privacyButton.addEventListener("click", () => togglePrivacyNotice());
 closePrivacyButton.addEventListener("click", () => togglePrivacyNotice(false));
 try {
@@ -138,7 +137,6 @@ try {
     optOutButton.disabled = true;
   }
 } catch {}
-*/
 
 optOutButton.addEventListener("click", () => {
   try { localStorage.setItem(OPT_OUT_KEY, "1"); } catch {}

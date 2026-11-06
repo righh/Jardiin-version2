@@ -8,7 +8,19 @@
 </head>
 <body>
 
+<button id="privacy-settings" type="button" aria-expanded="false" aria-controls="privacy-notice">Aviso de privacidad</button>
 
+<aside id="privacy-notice" aria-labelledby="privacy-title" hidden>
+  <button id="privacy-close" type="button" aria-label="Cerrar aviso">×</button>
+  <h2 id="privacy-title">Aviso de privacidad · información resumida</h2>
+  <p><strong>Finalidad:</strong> obtener estadísticas de uso y datos técnicos para conocer desde qué tipos de dispositivos se visita el jardín y mejorar su compatibilidad y funcionamiento.</p>
+  <p><strong>Datos técnicos:</strong> identificador aleatorio de sesión (no persistente entre sesiones), fecha y hora, página consultada, dominio de referencia, idioma, zona horaria, tipo de dispositivo, modelo del celular cuando el navegador lo proporcione, tipo y versión del navegador, sistema operativo y versión, factor de forma, resolución de pantalla y tamaño de ventana.</p>
+  <p>El modelo exacto no está disponible en todos los navegadores. En esos casos se registra “No disponible”. Este sitio no solicita nombre, correo, contactos, contraseñas ni ubicación GPS; tampoco usa cámara, micrófono o sensores ni crea una huella digital permanente del dispositivo. El proveedor de alojamiento o Firebase puede procesar direcciones IP y registros técnicos propios para prestar y proteger el servicio; este código no lee ni guarda directamente la IP.</p>
+  <p><strong>Almacenamiento:</strong> los datos de estadísticas se guardan en Firebase Cloud Firestore, proyecto jardin-385dd, y el sitio público no tiene permiso para consultarlos, modificarlos ni borrarlos. No se utilizan para publicidad ni se comparten por este código con anunciantes.</p>
+  <p><strong>Opciones:</strong> puedes desactivar las estadísticas de visitas en este navegador mediante el control siguiente. También puedes solicitar que se limite el uso o divulgación de los datos por el medio de contacto del responsable.</p>
+  <button id="privacy-optout" type="button">Desactivar estadísticas para futuras visitas</button>
+  <p><strong>Responsable:</strong> [ESCRIBE TU NOMBRE O DENOMINACIÓN Y DOMICILIO]. <strong>Contacto de privacidad:</strong> [ESCRIBE UN CORREO O MEDIO DE CONTACTO]. <strong>Conservación:</strong> [DEFINE Y ESCRIBE EL PLAZO DE CONSERVACIÓN]. Para solicitar acceso, rectificación, cancelación u oposición, utiliza el medio de contacto indicado. Consulta aquí el aviso integral: [AGREGA UN ENLACE A TU AVISO INTEGRAL].</p>
+</aside>
 
 <div id="hud"></div>
 <div id="pad"><button id="bn" aria-label="Día o noche">☀</button><div id="dp"><button id="bf" aria-label="Avanzar">▲</button><button id="bl" aria-label="Girar a la izquierda">◀</button><button id="bb" aria-label="Retroceder">▼</button><button id="br" aria-label="Girar a la derecha">▶</button></div></div>
